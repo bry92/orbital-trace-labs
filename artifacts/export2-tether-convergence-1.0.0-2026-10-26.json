@@ -1,0 +1,434 @@
+{
+  "schemaVersion": "otl-convergence-artifact-v1",
+  "generatedAtUtc": "2026-10-26T06:20:40.088Z",
+  "app": {
+    "name": "Orbital Trace Labs",
+    "version": "1.0.0",
+    "releaseLabel": "v1.0-research-prototype",
+    "buildId": "otl-build-2026-10-26T05:28:02.534Z"
+  },
+  "study": {
+    "schemaVersion": "otl-tether-convergence-v2",
+    "generatedAtUtc": "2026-10-26T06:20:40.088Z",
+    "model": {
+      "id": "OTL-TETH-1",
+      "version": "1.0.0"
+    },
+    "purpose": "Measure the observed order of accuracy of the tether integration under step refinement, with an explicit reference for each case and an explicit separation of reference-orbit error from tether-state error.",
+    "orderEstimator": "p_k = ln(e_(k-1)/e_k) / ln(h_(k-1)/h_k), evaluated from measured final-time errors; no order is assumed.",
+    "roundOffFloorRel": 1e-12,
+    "referenceErrorKind": "EMPIRICAL_ESTIMATE",
+    "referenceErrorStatement": "The reference error is an EMPIRICAL ESTIMATE (largest observed disagreement across independent numerical constructions). It is NOT a proven upper bound, NOT a validated interval enclosure, and NOT a rigorous bound. No validated enclosure is computed in this build; see the module header for the methods considered and why they were not adopted.",
+    "overallStatus": "PASS",
+    "cases": [
+      {
+        "caseId": "TC-1",
+        "title": "Constant-length in-plane libration on a circular orbit",
+        "description": "Fixed length L, circular reference orbit, no deployment. Isolates the gravity-gradient libration equation and its integration.",
+        "modelId": "OTL-TETH-1",
+        "modelVersion": "1.0.0",
+        "equation": "theta'' = -3 n^2 sin(theta) cos(theta), n = sqrt(mu/r^3) with r from the two-body reference orbit; L constant.",
+        "initialConditions": {
+          "radiusM": 6778137,
+          "speedMS": 7668.558175407055,
+          "theta0Rad": 0.08726646259971647,
+          "thetaDot0RadPerS": 0,
+          "muM3S2": 398600441800000
+        },
+        "parameters": {
+          "lengthM": 20000,
+          "deploymentRateMS": 0,
+          "satelliteMassKg": 500,
+          "orbiterMassKg": 500,
+          "durationS": 7613.628911068388
+        },
+        "durationS": 7613.628911068388,
+        "reference": {
+          "kind": "ANALYTIC_CLOSED_FORM",
+          "errorKind": "EMPIRICAL_ESTIMATE",
+          "method": "Exact Jacobi-elliptic solution of the non-linear pendulum form: sin(theta) = k sn(sqrt(3) n t + K(k), k), k = sin(theta0), evaluated by descending Landen (AGM) recursion.",
+          "equation": "theta'' = -3 n^2 sin(theta) cos(theta) with constant n and L.",
+          "validation": "The closed form is evaluated and then compared at the final time with two independently toleranced DOPRI5 runs and an RK4 Richardson limit on the same 2-state equation; the largest per-component difference is reported as an empirical estimate of the closed-form evaluation/truncation error. For TC-1 the comparison is against a formula, so agreement measures the formula's numerical evaluation, not its mathematical exactness for the stated equation.",
+          "estimates": [
+            {
+              "label": "DOPRI5 rtol 1e-12 (1054 accepted steps) vs closed form",
+              "thetaDifferenceRad": 2.965475087712832e-13,
+              "thetaRateDifferenceRadPerS": 6.949464875088962e-16
+            },
+            {
+              "label": "DOPRI5 rtol 1e-10 (391 accepted steps) vs closed form",
+              "thetaDifferenceRad": 4.5881777543943514e-11,
+              "thetaRateDifferenceRadPerS": 1.2281582001394398e-13
+            },
+            {
+              "label": "RK4 Richardson limit (h = 30/15 s) vs closed form",
+              "thetaDifferenceRad": 1.2766848689338417e-10,
+              "thetaRateDifferenceRadPerS": 3.247924932475721e-13
+            }
+          ],
+          "empiricalErrorThetaRad": 1.2766848689338417e-10,
+          "empiricalErrorThetaRateRadPerS": 3.247924932475721e-13,
+          "adequacyMetric": "adequacy_component = (finest isolated RK4 error for that component) / (EMPIRICAL reference-error estimate for the same component); adequacyRatioMin = min(adequacy_theta, adequacy_theta_dot). The estimate is the largest observed difference across the listed independent comparisons. It is not a proven upper bound, so adequacy is evidence-strength, not a guarantee that the true reference error is below the stated level.",
+          "adequacyCriterion": "adequacy_theta >= 100 and adequacy_theta_dot >= 100",
+          "covers": [
+            "Agreement of the adopted reference with two independently toleranced DOPRI5 solutions of the same 2-state equation.",
+            "Agreement with an RK4 Richardson limit at the finest study step and half that step (a different method and order).",
+            "Truncation of the reference method at the final time, to the extent these three comparisons expose it."
+          ],
+          "doesNotCover": [
+            "No proven upper bound: the maximum observed difference is not a bound on the true error.",
+            "Common-mode error shared by all DOPRI5 runs (e.g. a wrong but consistently implemented right-hand side) is invisible to tolerance comparisons.",
+            "Floating-point rounding inside the reference is not bounded analytically.",
+            "Error growth between the sampled final time and the rest of the interval is not characterised beyond the final-time comparisons.",
+            "The coupled 8-state orbit path is not the reference; its difference from the isolated solution is reported separately."
+          ],
+          "limitations": "Exact in closed form only for constant n and L. The reported quantity is still an empirical estimate of the numerical evaluation error, not a proof. It is not a reference for the coupled 8-state orbit; that comparison carries a small orbit-coupling difference reported separately.",
+          "adoptedThetaRad": -0.05975818348383565,
+          "adoptedThetaRateRadPerS": -0.0001243885813018536,
+          "adequacyTheta": 760.0212683124402,
+          "adequacyThetaRate": 497.760242742721,
+          "adequacyRatioMin": 497.760242742721
+        },
+        "solver": {
+          "method": "RK4",
+          "settings": "Fixed-step classical RK4 in the production propagateTether path, steps 240, 120, 60, 30 s, 8-state [r, v, theta, theta_dot]"
+        },
+        "points": [
+          {
+            "stepS": 240,
+            "steps": 32,
+            "thetaErrRad": 0.00011811023212219413,
+            "thetaErrRel": 0.0013534435635824415,
+            "thetaRateErrRadPerS": 3.168423714785759e-7,
+            "thetaRateErrRel": 0.0018528142486705784,
+            "orbitPositionErrM": 21325.46035589044,
+            "orbitPositionErrRel": 0.003146212647500403,
+            "isolatedThetaErrRad": 0.00047718771773865715,
+            "isolatedThetaRateErrRadPerS": 3.4778494817155415e-7,
+            "thetaRatio": null,
+            "thetaRateRatio": null,
+            "isolatedThetaRatio": null,
+            "isolatedThetaRateRatio": null,
+            "thetaOrder": null,
+            "thetaRateOrder": null,
+            "isolatedThetaOrder": null,
+            "isolatedThetaRateOrder": null,
+            "orbitCouplingDeltaRad": -0.000359077485616463
+          },
+          {
+            "stepS": 120,
+            "steps": 64,
+            "thetaErrRad": 0.000011685343593789699,
+            "thetaErrRel": 0.0001339041740168767,
+            "thetaRateErrRadPerS": 4.35733419249071e-9,
+            "thetaRateErrRel": 0.000025480590996688067,
+            "orbitPositionErrM": 870.1141859438437,
+            "orbitPositionErrRel": 0.0001283706991971162,
+            "isolatedThetaErrRad": 0.000027451094684556587,
+            "isolatedThetaRateErrRadPerS": 3.345642771355431e-8,
+            "thetaRatio": 10.107553207503893,
+            "thetaRateRatio": 72.7147281988634,
+            "isolatedThetaRatio": 17.383194485395624,
+            "isolatedThetaRateRatio": 10.395160868614042,
+            "thetaOrder": 3.3373618930554625,
+            "thetaRateOrder": 6.1841757031507925,
+            "isolatedThetaOrder": 4.119621323457872,
+            "isolatedThetaRateOrder": 3.3778401794478508,
+            "orbitCouplingDeltaRad": -0.00001576575109076689
+          },
+          {
+            "stepS": 60,
+            "steps": 127,
+            "thetaErrRad": 8.390442677377874e-7,
+            "thetaErrRel": 0.000009614739073203977,
+            "thetaRateErrRadPerS": 1.0068584473652865e-9,
+            "thetaRateErrRel": 0.0000058878541685163485,
+            "orbitPositionErrM": 39.956907142611385,
+            "orbitPositionErrRel": 0.000005894968948342499,
+            "isolatedThetaErrRad": 0.0000016125924949192405,
+            "isolatedThetaRateErrRadPerS": 2.4293244350024907e-9,
+            "thetaRatio": 13.926969104139719,
+            "thetaRateRatio": 4.327653210729707,
+            "isolatedThetaRatio": 17.0229582309518,
+            "isolatedThetaRateRatio": 13.771905979910835,
+            "thetaOrder": 3.7998094164160032,
+            "thetaRateOrder": 2.1135848958362278,
+            "isolatedThetaOrder": 4.089409863654687,
+            "isolatedThetaRateOrder": 3.7836563317370917,
+            "orbitCouplingDeltaRad": -7.735482271814531e-7
+          },
+          {
+            "stepS": 30,
+            "steps": 254,
+            "thetaErrRad": 5.537693318485859e-8,
+            "thetaErrRel": 6.345729107740699e-7,
+            "thetaRateErrRadPerS": 8.532846239479863e-11,
+            "thetaRateErrRel": 4.989793196044322e-7,
+            "orbitPositionErrM": 2.0451041780196633,
+            "orbitPositionErrRel": 3.017206908062884e-7,
+            "isolatedThetaErrRad": 9.703076533223998e-8,
+            "isolatedThetaRateErrRadPerS": 1.6166879027992506e-10,
+            "thetaRatio": 15.151512001159404,
+            "thetaRateRatio": 11.799795977885353,
+            "isolatedThetaRatio": 16.61939374998861,
+            "isolatedThetaRateRatio": 15.02655169743141,
+            "thetaOrder": 3.92138986533343,
+            "thetaRateOrder": 3.56069001004756,
+            "isolatedThetaOrder": 4.054795850651611,
+            "isolatedThetaRateOrder": 3.9094420715543294,
+            "orbitCouplingDeltaRad": -4.1653832147381387e-8
+          }
+        ],
+        "observedOrder": {
+          "theta": 3.92138986533343,
+          "thetaRate": 3.56069001004756,
+          "isolatedTheta": 4.054795850651611,
+          "isolatedThetaRate": 3.9094420715543294
+        },
+        "orbitErrorOrder": 4.2881986745673215,
+        "acceptance": {
+          "criterion": "Primary (tether-only) metrics: theta and theta_dot errors must decrease monotonically under step refinement, the observed order on the last two refinement intervals must be at least 3.5, each error ratio must lie in [8, 40]. The as-executed coupled theta error must also decrease monotonically with observed order at least 3. Reference adequacy is evaluated separately for theta and theta_dot, each as (finest isolated error for that component) / (EMPIRICAL reference-error estimate for the same component), and both must be at least 100. If the empirical reference-error estimate is inadequate or not computable, the case is UNRESOLVED rather than PASS or FAIL, because the limitation is in the evidence rather than in the implementation.",
+          "tolerance": "order >= 3.5 (isolated), order >= 3 (coupled); ratio in [8, 40] (isolated only); adequacy_theta >= 100 and adequacy_theta_dot >= 100",
+          "justification": "Classical RK4 has global order 4, so the expected ratio under halving is 2^4 = 16. The 3.5 order floor and the 8-40 ratio band admit asymptotic approach and modest round-off noise while excluding orders 1-3 that would indicate a coding error. The coupled floor is lower because the reference-orbit error is itself O(h^4) and is measured to partially cancel the tether truncation error, so the coupled slope cannot be treated as a clean single-source measurement. The adequacy ratio prevents a conclusion that is limited by the reference rather than by the method under test; it uses an empirical estimate, so it inherits that estimate's status — it does not prove the true reference error is below the stated level.",
+          "status": "PASS",
+          "reasons": []
+        },
+        "assumptions": [
+          "Massless rigid rod, two point masses, in-plane libration only.",
+          "One-way coupling: the tether does not react on the centre-of-mass orbit.",
+          "Constant local mean motion approximation for the gravity-gradient torque.",
+          "Physical initial conditions and the final time are identical at every refinement level; only the step changes."
+        ],
+        "limitations": "The closed-form reference is exact only for constant n and constant L; the propagated orbit is not exactly circular, so a small orbit-coupling contribution remains and is reported separately. Order convergence shows that the implemented equations are solved consistently; it does not validate the physical model against flight data.",
+        "notes": [
+          "Duration is 2.37 exact libration periods at the initial amplitude: T = 4K(k)/(sqrt(3) n) = 3212.502 s, versus the small-angle value 3206.386 s.",
+          "The isolated (2-state, analytic mean motion) integration isolates tether-integration error from reference-orbit error; both orders are reported.",
+          "The reference-error quantity is an EMPIRICAL estimate from three independent comparisons, not a proven bound."
+        ]
+      },
+      {
+        "caseId": "TC-2",
+        "title": "Prescribed deployment with time-varying tether length",
+        "description": "Length prescribed as L(t) = L0 + Ldot t, adding the 2 (Ldot/L) theta_dot kinematic term. No closed-form solution exists for this case.",
+        "modelId": "OTL-TETH-1",
+        "modelVersion": "1.0.0",
+        "equation": "theta'' + 2 (Ldot/L) theta_dot + 3 n^2 sin(theta) cos(theta) = 0, L(t) = L0 + Ldot t.",
+        "initialConditions": {
+          "radiusM": 6778137,
+          "speedMS": 7668.558175407055,
+          "theta0Rad": 0.03490658503988659,
+          "thetaDot0RadPerS": 0,
+          "muM3S2": 398600441800000
+        },
+        "parameters": {
+          "lengthM": 20000,
+          "deploymentRateMS": 1,
+          "satelliteMassKg": 500,
+          "orbiterMassKg": 500,
+          "durationS": 6900
+        },
+        "durationS": 6900,
+        "reference": {
+          "kind": "NUMERICAL_ADAPTIVE",
+          "errorKind": "EMPIRICAL_ESTIMATE",
+          "method": "Adaptive Dormand-Prince 5(4) on the 2-state tether equation at rtol 1e-12, atol 1e-15 (915 accepted steps); not an exact solution.",
+          "equation": "theta'' + 2 (Ldot/L) theta_dot + 3 n^2 sin(theta) cos(theta) = 0, L(t) = L0 + Ldot t, with the exact circular mean motion n.",
+          "validation": "Compared at the final time with two independently toleranced DOPRI5 runs and an RK4 Richardson limit on the same 2-state equation; the largest per-component difference is reported as an EMPIRICAL estimate of the reference error. The adopted reference is NUMERICAL, not exact, and no rigorous enclosure is computed.",
+          "estimates": [
+            {
+              "label": "DOPRI5 rtol 1e-10 (326 accepted steps) vs adopted reference",
+              "thetaDifferenceRad": 1.5230152208833836e-11,
+              "thetaRateDifferenceRadPerS": 4.261212693465466e-14
+            },
+            {
+              "label": "DOPRI5 rtol 1e-11 (518 accepted steps) vs adopted reference",
+              "thetaDifferenceRad": 1.3830984968432602e-12,
+              "thetaRateDifferenceRadPerS": 4.163885219694158e-15
+            },
+            {
+              "label": "RK4 Richardson limit (h = 30/15 s) vs adopted reference",
+              "thetaDifferenceRad": 3.006652045389746e-11,
+              "thetaRateDifferenceRadPerS": 9.640653889347178e-14
+            }
+          ],
+          "empiricalErrorThetaRad": 3.006652045389746e-11,
+          "empiricalErrorThetaRateRadPerS": 9.640653889347178e-14,
+          "adequacyMetric": "adequacy_component = (finest isolated RK4 error for that component) / (EMPIRICAL reference-error estimate for the same component); adequacyRatioMin = min(adequacy_theta, adequacy_theta_dot). The estimate is the largest observed difference across the listed independent comparisons. It is not a proven upper bound, so adequacy is evidence-strength, not a guarantee that the true reference error is below the stated level.",
+          "adequacyCriterion": "adequacy_theta >= 100 and adequacy_theta_dot >= 100",
+          "covers": [
+            "Agreement of the adopted reference with two independently toleranced DOPRI5 solutions of the same 2-state equation.",
+            "Agreement with an RK4 Richardson limit at the finest study step and half that step (a different method and order).",
+            "Truncation of the reference method at the final time, to the extent these three comparisons expose it."
+          ],
+          "doesNotCover": [
+            "No proven upper bound: the maximum observed difference is not a bound on the true error.",
+            "Common-mode error shared by all DOPRI5 runs (e.g. a wrong but consistently implemented right-hand side) is invisible to tolerance comparisons.",
+            "Floating-point rounding inside the reference is not bounded analytically.",
+            "Error growth between the sampled final time and the rest of the interval is not characterised beyond the final-time comparisons.",
+            "The coupled 8-state orbit path is not the reference; its difference from the isolated solution is reported separately."
+          ],
+          "limitations": "A numerical reference supports the error of the method under test only down to its own (estimated) error. The estimate is the maximum observed disagreement with two other DOPRI5 tolerances and one RK4 Richardson limit; it is not a proven bound, and common-mode error in the reference method is not detectable this way.",
+          "adoptedThetaRad": 0.01559984788231343,
+          "adoptedThetaRateRadPerS": -0.000041234926423747705,
+          "adequacyTheta": 968.8586635059928,
+          "adequacyThetaRate": 380.14246092701717,
+          "adequacyRatioMin": 380.14246092701717
+        },
+        "solver": {
+          "method": "RK4",
+          "settings": "Fixed-step classical RK4 in the production propagateTether path, steps 240, 120, 60, 30 s, 8-state [r, v, theta, theta_dot]"
+        },
+        "points": [
+          {
+            "stepS": 240,
+            "steps": 29,
+            "thetaErrRad": 0.000026014750061238365,
+            "thetaErrRel": 0.0007452676917983291,
+            "thetaRateErrRadPerS": 5.038104092471203e-8,
+            "thetaRateErrRel": 0.0007365390403164075,
+            "orbitPositionErrM": 17817.59760572077,
+            "orbitPositionErrRel": 0.002628686555866423,
+            "isolatedThetaErrRad": 0.00008444567675833237,
+            "isolatedThetaRateErrRadPerS": 2.1814374673979577e-7,
+            "thetaRatio": null,
+            "thetaRateRatio": null,
+            "isolatedThetaRatio": null,
+            "isolatedThetaRateRatio": null,
+            "thetaOrder": null,
+            "thetaRateOrder": null,
+            "isolatedThetaOrder": null,
+            "isolatedThetaRateOrder": null,
+            "orbitCouplingDeltaRad": -0.000058430926697094
+          },
+          {
+            "stepS": 120,
+            "steps": 58,
+            "thetaErrRad": 0.0000017734870094640587,
+            "thetaErrRel": 0.00005080666033178422,
+            "thetaRateErrRadPerS": 4.038040340939456e-9,
+            "thetaRateErrRel": 0.000059033602777660063,
+            "orbitPositionErrM": 728.0752768008407,
+            "orbitPositionErrRel": 0.00010741524947059062,
+            "isolatedThetaErrRad": 0.000006615983236927386,
+            "isolatedThetaRateErrRadPerS": 1.1380540613835182e-8,
+            "thetaRatio": 14.66870065718718,
+            "thetaRateRatio": 12.476606638603023,
+            "isolatedThetaRatio": 12.763889165709385,
+            "isolatedThetaRateRatio": 19.168135692482053,
+            "thetaOrder": 3.8746691786830283,
+            "thetaRateOrder": 3.641153701255425,
+            "isolatedThetaOrder": 3.673996081135584,
+            "isolatedThetaRateOrder": 4.260638121095085,
+            "orbitCouplingDeltaRad": -0.000004842496227463328
+          },
+          {
+            "stepS": 60,
+            "steps": 115,
+            "thetaErrRad": 2.1274571695290012e-7,
+            "thetaErrRel": 0.000006094715845442992,
+            "thetaRateErrRadPerS": 2.709962034912498e-10,
+            "thetaRateErrRel": 0.0000039617935633189955,
+            "orbitPositionErrM": 33.44360918230273,
+            "orbitPositionErrRel": 0.000004934041489911273,
+            "isolatedThetaErrRad": 4.5081310414904485e-7,
+            "isolatedThetaRateErrRadPerS": 6.314826890021184e-10,
+            "thetaRatio": 8.3361819681507,
+            "thetaRateRatio": 14.900726611359483,
+            "isolatedThetaRatio": 14.675667535032552,
+            "isolatedThetaRateRatio": 18.02193601192606,
+            "thetaOrder": 3.05938677014081,
+            "thetaRateOrder": 3.8973107781282024,
+            "isolatedThetaOrder": 3.875354221907746,
+            "isolatedThetaRateOrder": 4.171682096314951,
+            "orbitCouplingDeltaRad": -2.3806738719614473e-7
+          },
+          {
+            "stepS": 30,
+            "steps": 230,
+            "thetaErrRad": 1.628000331418966e-8,
+            "thetaErrRel": 4.6638774018103015e-7,
+            "thetaRateErrRadPerS": 1.724487732652916e-11,
+            "thetaRateErrRel": 2.5210922925226484e-7,
+            "orbitPositionErrM": 1.7136654376089961,
+            "orbitPositionErrRel": 2.5282248464570663e-7,
+            "isolatedThetaErrRad": 2.913020882323869e-8,
+            "isolatedThetaRateErrRadPerS": 3.6648218944420555e-11,
+            "thetaRatio": 13.06791607145871,
+            "thetaRateRatio": 15.714591548549603,
+            "isolatedThetaRatio": 15.475793767376212,
+            "isolatedThetaRateRatio": 17.230924372063036,
+            "thetaOrder": 3.7079571891133547,
+            "thetaRateOrder": 3.9740328691850197,
+            "isolatedThetaOrder": 3.951941503350394,
+            "isolatedThetaRateOrder": 4.106928193503024,
+            "orbitCouplingDeltaRad": -1.2850205509049029e-8
+          }
+        ],
+        "observedOrder": {
+          "theta": 3.7079571891133547,
+          "thetaRate": 3.9740328691850197,
+          "isolatedTheta": 3.951941503350394,
+          "isolatedThetaRate": 4.106928193503024
+        },
+        "orbitErrorOrder": 4.286573167461066,
+        "acceptance": {
+          "criterion": "Primary (tether-only) metrics: theta and theta_dot errors must decrease monotonically under step refinement, the observed order on the last two refinement intervals must be at least 3.5, each error ratio must lie in [8, 40]. The as-executed coupled theta error must also decrease monotonically with observed order at least 3. Reference adequacy is evaluated separately for theta and theta_dot, each as (finest isolated error for that component) / (EMPIRICAL reference-error estimate for the same component), and both must be at least 100. If the empirical reference-error estimate is inadequate or not computable, the case is UNRESOLVED rather than PASS or FAIL, because the limitation is in the evidence rather than in the implementation.",
+          "tolerance": "order >= 3.5 (isolated), order >= 3 (coupled); ratio in [8, 40] (isolated only); adequacy_theta >= 100 and adequacy_theta_dot >= 100",
+          "justification": "Classical RK4 has global order 4, so the expected ratio under halving is 2^4 = 16. The 3.5 order floor and the 8-40 ratio band admit asymptotic approach and modest round-off noise while excluding orders 1-3 that would indicate a coding error. The coupled floor is lower because the reference-orbit error is itself O(h^4) and is measured to partially cancel the tether truncation error, so the coupled slope cannot be treated as a clean single-source measurement. The adequacy ratio prevents a conclusion that is limited by the reference rather than by the method under test; it uses an empirical estimate, so it inherits that estimate's status — it does not prove the true reference error is below the stated level.",
+          "status": "PASS",
+          "reasons": []
+        },
+        "assumptions": [
+          "Massless rigid rod, two point masses, in-plane libration only.",
+          "One-way coupling: the tether does not react on the centre-of-mass orbit.",
+          "Constant local mean motion approximation for the gravity-gradient torque.",
+          "Physical initial conditions and the final time are identical at every refinement level; only the step changes."
+        ],
+        "limitations": "The reference is numerical, not exact: adaptive DOPRI5 on the 2-state equation, with the reference-error quantity being the largest of three independent comparisons (two tolerances and an RK4 Richardson limit). That quantity is an empirical estimate, not a proven bound, because DOPRI5 provides no a priori global error bound and no validated enclosure is computed. No closed-form solution exists for a time-varying coefficient. Order convergence shows that the implemented equations are solved consistently; it does not validate the physical model against flight data.",
+        "notes": [
+          "Length grows from 20000 m to 26900 m at 1 m/s; L/r reaches 3.969e-3.",
+          "Deployment is PRESCRIBED: reel dynamics, actuator torque, tether elasticity and damping are not modelled. Agreement between refinements therefore says nothing about deployment transients.",
+          "Reference/metric consistency: the adopted reference and the isolated metric integrate the SAME 2-state equation (theta'' + 2(Ldot/L)theta_dot + 3n^2 sin(theta)cos(theta) = 0), the same theta0 = theta_dot0 = 0 conditions, the same L0 and Ldot history and the same final time T, both with the exact circular mean motion n0. The reference differs from the isolated metric only in the numerical method (adaptive DOPRI5 vs fixed-step RK4).",
+          "Difference from the as-executed path: the production 8-state engine uses n(t) = sqrt(mu/|r(t)|^3) from the numerically integrated orbit instead of the exact n0. That one-way coupling difference is reported per refinement level as orbitCouplingDeltaRad and the orbit position error; it is not mixed into the reference comparison.",
+          "Reference cross-checks at the final time: DOPRI5 rtol 1e-10 → Δθ 1.52e-11, Δθ̇ 4.26e-14; DOPRI5 rtol 1e-11 → Δθ 1.38e-12, Δθ̇ 4.16e-15; RK4 Richardson limit → Δθ 3.01e-11, Δθ̇ 9.64e-14."
+        ]
+      }
+    ],
+    "limitations": [
+      "Order convergence verifies numerical consistency of the implemented equations, not physical validity, flight performance or mission data agreement.",
+      "Both cases use a prescribed length history with one-way orbital coupling; dynamically solved deployment and fully coupled spacecraft-tether mechanics are NOT modelled and are not verified here.",
+      "Energy and angular momentum of the tether subsystem are not conserved under prescribed length change and no conservation claim is made."
+    ]
+  },
+  "hashSpec": {
+    "algorithm": "SHA-256",
+    "canonicalization": "Recursive JSON canonicalisation: object keys sorted by UTF-16 code unit, no insignificant whitespace, numbers in ECMAScript shortest round-trip form, non-finite numbers rejected.",
+    "includedFields": [
+      "schemaVersion",
+      "app.name",
+      "app.version",
+      "app.releaseLabel",
+      "study.schemaVersion",
+      "study.model",
+      "study.purpose",
+      "study.orderEstimator",
+      "study.roundOffFloorRel",
+      "study.overallStatus",
+      "study.referenceErrorKind",
+      "study.referenceErrorStatement",
+      "study.cases",
+      "study.limitations"
+    ],
+    "excludedFields": [
+      "generatedAtUtc",
+      "app.buildId",
+      "study.generatedAtUtc",
+      "hashSpec",
+      "payloadHash",
+      "payloadBytes"
+    ],
+    "note": "Hash covers measured results and method/model identity only. Export time, execution time and build identifier are recorded but excluded, so re-exporting the same results yields the same digest. The digest is integrity evidence, not a correctness or provenance-of-build claim."
+  },
+  "payloadHash": "ba219d4c5fd34c05b00ae3b1337935694010e915f689244c49faa9d857164427",
+  "payloadBytes": 22335
+}
