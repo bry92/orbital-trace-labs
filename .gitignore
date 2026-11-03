@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+.cache/
+/freebuff-sites-build/
+
+# Environment files hold credentials (see .env.example). Never commit them.
+.env
+.env.*
+!.env.example
